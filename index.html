@@ -3,11 +3,158 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MemHand</title>
+  <title>MemHand: Memory-Enhanced World-Space Hand Motion Reconstruction from Egocentric Videos</title>
+  <link rel="stylesheet" href="site.css">
 </head>
 <body>
-  <h1>MemHand</h1>
-  <p>Memory-enhanced world-space hand motion reconstruction from egocentric videos.</p>
-  <p><a href="https://github.com/IRMVLab/MemHand">Code</a></p>
+  <header class="block">
+    <div class="wrap">
+      <h1>MemHand: <span class="keep">Memory-Enhanced</span> <span class="keep">World-Space</span> Hand Motion Reconstruction from <span class="keep">Egocentric Videos</span></h1>
+      <p class="authors">
+        <span>Junyi Ma<sup>1,&dagger;</sup></span>
+        <span>Zhangshuo Qi<sup>2,&dagger;</sup></span>
+        <span>Erhang Zhang<sup>1</sup></span>
+        <span>Mingjie Li<sup>1</sup></span>
+        <span>Hesheng Wang<sup>1,*</sup></span>
+      </p>
+      <p class="affil">
+        <span><sup>1</sup>Shanghai Jiao Tong University</span>
+        <span><sup>2</sup>Beijing Institute of Technology</span>
+      </p>
+      <p class="equal"><span>&dagger; Equal contribution</span><span>* Corresponding author</span></p>
+      <div class="actions">
+        <button type="button" class="btn" disabled>
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
+            <path d="M4.2 1.7h5.15L12.8 5.05V14.3H4.2z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+            <path d="M9.2 1.85V5.15H12.7" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          </svg>
+          <span>Paper</span>
+          <span class="soon">coming soon</span>
+        </button>
+        <a class="btn" href="#video">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
+            <rect x="1.7" y="3.2" width="12.6" height="9.6" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M6.55 6.05v3.9L10.55 8z" fill="currentColor"/>
+          </svg>
+          <span>Video</span>
+        </a>
+        <button type="button" class="btn" disabled>
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
+            <path d="M6.15 4.35 2.65 8l3.5 3.65M9.85 4.35 13.35 8 9.85 11.65" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Code</span>
+          <span class="soon">coming soon</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <figure class="block teaser">
+      <div class="wrap">
+        <img src="media/figures/teaser.png" width="2200" height="802" alt="Per-frame, fixed-window, and memory timelines, with HaWoR, ACE-Ego-Hand, and MemHand on out-of-sight and occluded hands, and the metric world-space motion on ARCTIC and HOT3D.">
+        <figcaption>
+          <strong>MemHand reconstructs the metric world-space motion of both hands.</strong>
+          Where other methods take their temporal context from a fixed window, MemHand combines a short-term memory of each occlusion and each out-of-sight gap with a long-term memory of the metric scale.
+        </figcaption>
+      </div>
+    </figure>
+
+    <section id="abstract" class="block band">
+      <div class="wrap">
+        <div class="measure">
+          <h2>Abstract</h2>
+          <p>Recovering the continuous world-space motion of both hands from egocentric video is essential for applications such as human-to-robot policy transfer and augmented reality. Achieving this goes beyond reconstructing the hands from each individual frame, as the context that a frame needs is often spread over time, especially around occlusions or when a hand moves out of sight. Recent works have explored how to exploit temporal context, yet they mostly draw it from fixed-length windows. Such windows cannot guarantee that every frame has the context required to reconstruct the hands in world space with accurate poses and metric scale.</p>
+          <p>To address this limitation, we introduce MemHand, a memory-enhanced framework for world-space hand motion reconstruction. MemHand maintains two complementary forms of memory. The Short-Term Event Memory keeps the context of the well-observed hand around each occlusion or out-of-sight event and supplies it to frames with weak or missing visual evidence. In addition, since the metric scale holds over the whole recording, the Long-Term Scale Memory retains the most reliable observations across the video as scale anchors within a bounded state.</p>
+          <p>Across benchmarks featuring severe occlusions and frequent out-of-sight intervals, MemHand achieves state-of-the-art accuracy and generalizes well to unseen domains. Benefiting from the synergy of both memories, it cuts W-MPJPE by 57% on ARCTIC and 70% on HOT3D relative to StableHand, delivering continuous and metrically accurate world-space hand poses and trajectories.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="video" class="block">
+      <div class="wrap">
+        <h2>Video</h2>
+        <video controls preload="metadata" width="1920" height="1080">
+          <source src="media/memhand.mp4" type="video/mp4">
+        </video>
+      </div>
+    </section>
+
+    <section id="method" class="block">
+      <div class="wrap">
+        <h2>Method</h2>
+        <figure>
+          <img src="media/figures/overview.png" width="2000" height="913" alt="System overview. The hand localizer, the short-term event memory for occluded and out-of-sight events, and the long-term scale memory.">
+          <figcaption>
+            <strong>System overview.</strong>
+            The Hand Localizer decides which hands are in each frame and tracks the keypoints. An occluded event is read in the camera frame, and an out-of-sight event is completed in the world frame. These two events form the short-term memory. The Long-Term Scale Memory keeps the most precise observations of the metric scale.
+          </figcaption>
+        </figure>
+        <figure class="event-fig">
+          <img src="media/figures/event.png" width="1800" height="1083" alt="An occlusion that fills a fixed window, padded with leading and trailing context into one event.">
+          <figcaption>
+            <strong>An occluded event.</strong>
+            Hand confidence drops below the threshold over an occlusion. MemHand pads the interval with visible leading and trailing contexts into an occluded event. HFP recovers the hand features from behind the occluder and further enriches the temporal context.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="comparisons" class="block band">
+      <div class="wrap">
+        <h2>Comparisons</h2>
+        <div class="compare">
+          <div class="clip-row" id="clip-list"></div>
+          <div class="method-bar">
+            <div class="methods" id="methods" role="group" aria-label="Method"></div>
+          </div>
+          <p class="miss" id="miss" hidden>This view has not been rendered yet.</p>
+          <div class="stage" id="stage">
+            <div class="pane" id="cam-wrap">
+              <p class="pane-label" id="cam-label">Camera</p>
+              <div class="frame frame-cam">
+                <video id="view-cam" loop playsinline preload="metadata"></video>
+              </div>
+            </div>
+            <div class="pane" id="world-wrap">
+              <p class="pane-label" id="world-label">World</p>
+              <div class="frame frame-world" id="world-frame">
+                <video id="view-world" loop playsinline preload="metadata"></video>
+                <p class="world-empty" id="world-empty">The input has no world view.</p>
+              </div>
+            </div>
+          </div>
+          <div class="transport">
+            <button type="button" id="play">Play</button>
+            <div class="scrub" id="scrub">
+              <div class="track"></div>
+              <div class="playhead" id="playhead"></div>
+            </div>
+            <span id="clock">0:00 / 0:00</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="citation" class="block">
+      <div class="wrap cite">
+        <h2>Citation</h2>
+        <pre class="bibtex" id="bibtex">@misc{ma2026memhand,
+  title = {MemHand: Memory-Enhanced World-Space Hand Motion Reconstruction from Egocentric Videos},
+  author = {Ma, Junyi and Qi, Zhangshuo and Zhang, Erhang and Li, Mingjie and Wang, Hesheng},
+  year = {2026}
+}</pre>
+        <button type="button" class="btn" id="copy-bib">Copy</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="block">
+    <div class="wrap">
+      <p>MemHand, 2026</p>
+    </div>
+  </footer>
+  <script src="clips.js"></script>
+  <script src="site.js"></script>
 </body>
 </html>
